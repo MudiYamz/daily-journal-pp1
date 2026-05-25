@@ -137,6 +137,11 @@ class Journal:
 
         print("Recent entries:" if not show_all else "All entries:")
 
+        if not show_all:
+            print("Recent entries:")
+        else:
+            print("All entries:")
+        
         for i, entry_file in enumerate (entries):
             if limit and i >= limit:
                 break 
@@ -161,7 +166,17 @@ class Journal:
             print()
             print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
         
+def search_entries(self, query):
+        """Search through journal entries"""
+        print("="*80)
+        print(f'SEARCH RESULTS: "{query}"')
+        print("="*80)
+        print()
 
+    # Get all entries in sorted from most recent at the top
+    entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
+
+        
 
 
 
