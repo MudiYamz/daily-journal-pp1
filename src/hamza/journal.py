@@ -1,6 +1,6 @@
 import argparse
 import pathlib
-import os
+import os # the underline means its an unused import,consider removing
 from datetime import datetime
 import random
 
