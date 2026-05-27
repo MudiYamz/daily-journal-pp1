@@ -137,30 +137,32 @@ class Journal:
 
         print("Recent entries:" if not show_all else "All entries:")
 
+"""" the above is the 
         if not show_all:
             print("Recent entries:")
         else:
-            print("All entries:")
+            print("All entries:") """
         
-        for i, entry_file in enumerate (entries):
-            if limit and i >= limit:
+
+for i, entry_file in enumerate (entries):
+        if limit and i >= limit:
                 break 
 
-            # Parse date from file name
-            date_str = entry_file.stem
-            try:
+        # Parse date from file name
+        date_str = entry_file.stem
+        try:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d")
                 day_name = date_obj.strftime("%A")
-            except:
+        except:
                 day_name = "Unknown"
 
-            # Count entries and words
-            content = entry_file.read_text()
-            entry_count = content.count("## Entry")
-            word_count = len(content.split())
+        # Count entries and words
+        content = entry_file.read_text()
+        entry_count = content.count("## Entry")
+        word_count = len(content.split())
 
-            entry_text = "entry" if entry_count == 1 else "entries"
-            print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
+        entry_text = "entry" if entry_count == 1 else "entries"
+        print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
 
         if limit and len(entries) > limit:
             print()
