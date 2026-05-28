@@ -143,30 +143,29 @@ class Journal:
         else:
             print("All entries:") """
         
-
 for i, entry_file in enumerate (entries):
-        if limit and i >= limit:
-                break 
+   if limit and i >= limit:
+    break 
 
         # Parse date from file name
-        date_str = entry_file.stem
-        try:
-                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                day_name = date_obj.strftime("%A")
-        except:
-                day_name = "Unknown"
+date_str = entry_file.stem
+try:
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    day_name = date_obj.strftime("%A")
+except:
+    day_name = "Unknown"
 
         # Count entries and words
-        content = entry_file.read_text()
-        entry_count = content.count("## Entry")
-        word_count = len(content.split())
+    content = entry_file.read_text()
+    entry_count = content.count("## Entry")
+    word_count = len(content.split())
 
-        entry_text = "entry" if entry_count == 1 else "entries"
-        print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
+    entry_text = "entry" if entry_count == 1 else "entries"
+    print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
 
-        if limit and len(entries) > limit:
-            print()
-            print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
+if limit and len(entries) > limit:
+    print()
+    print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
         
 def search_entries(self, query):
         """Search through journal entries"""
@@ -176,7 +175,7 @@ def search_entries(self, query):
         print()
 
     # Get all entries in sorted from most recent at the top
-    entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
+entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
 
         
 
