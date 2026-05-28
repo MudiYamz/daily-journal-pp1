@@ -173,6 +173,7 @@ def search_entries(self, query):
         print(f'SEARCH RESULTS: "{query}"')
         print("="*80)
         print()
+        print()
 
     # Get all entries in sorted from most recent at the top
 entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
