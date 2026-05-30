@@ -60,10 +60,10 @@ class Journal:
         if file_path.exists():
             content = file_path.read_text()
             existing_entries = content.count("## 📝 Entry")
-            print("You already have {existing_entries} {'entry' if existing_entries == 1 else 'entries'} today. Add more if you like.")
+            print(f"You already have {existing_entries} {'entry' if existing_entries == 1 else 'entries'} today. Add more if you like.")
             print()
 
-        # Get random prompt
+         # Get random prompt
         prompt = random.choice(REFLECTION_PROMPTS)
         print("Reflection Prompt:")
         print(f"{prompt}")
@@ -136,80 +136,163 @@ class Journal:
         limit = None if show_all else 7
 
         print("Recent entries:" if not show_all else "All entries:")
-
-"""" the above is the 
-        if not show_all:
-            print("Recent entries:")
-        else:
-            print("All entries:") """
         
-for i, entry_file in enumerate (entries):
-   if limit and i >= limit:
-    break 
+        for i, entry_file in enumerate(entries):
+            if limit and i >= limit:
+                break 
 
-        # Parse date from file name
-date_str = entry_file.stem
-try:
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-    day_name = date_obj.strftime("%A")
-except:
-    day_name = "Unknown"
+            # Parse date from file name
+            date_str = entry_file.stem
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                day_name = date_obj.strftime("%A")
+            except Exception:
+                day_name = "Unknown"
 
-        # Count entries and words
-    content = entry_file.read_text()
-    entry_count = content.count("## Entry")
-    word_count = len(content.split())
+            # Count entries and words
+            content = entry_file.read_text()
+            entry_count = content.count("## Entry")
+            word_count = len(content.split())
 
-    entry_text = "entry" if entry_count == 1 else "entries"
-    print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
+            entry_text = "entry" if entry_count == 1 else "entries"
+            print(f" - {date_str} ({day_name}) - {entry_count} {entry_text}, {word_count} words")
 
-if limit and len(entries) > limit:
-    print()
-    print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
+        if limit and len(entries) > limit:
+            print()
+            print(f"Showing {limit} most recent. Use 'journal.py list --all' to see all entries.")
         
-def search_entries(self, query):
+
+    def search_entries(self, query):
         """Search through journal entries"""
         print("="*80)
         print(f'SEARCH RESULTS: "{query}"')
         print("="*80)
         print()
-        print()
-
-    # Get all entries in sorted from most recent at the top
-entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
-
         
+        # Get all entries
+        entries = sorted(self.journal_dir.glob("*.md"), reverse=True)
+        
+        if not entries:
+            print("No journal entries to search.")
+            return
+        
+        # Search
+        matches = []
+        
+        for entry_file in entries:
+            content = entry_file.read_text()
+            
+            if query.lower() in content.lower():
+                # Parse date
+                date_str = entry_file.stem
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    day_name = date_obj.strftime("%A")
+                except:
+                    day_name = "Unknown"
+                
+                # Find context around match
+                content_lower = content.lower()
+                query_lower = query.lower()
+                
+                index = content_lower.find(query_lower)
+                
+                # Extract 50 chars before and after
+                start = max(0, index - 50)
+                end = min(len(content), index + len(query) + 50)
+                context = content[start:end]
+                
+                # Clean up context
+                context = context.replace('\n', ' ').strip()
+                if start > 0:
+                    context = "..." + context
+                if end < len(content):
+                    context = context + "..."
+                
+                matches.append({
+                    'date': date_str,
+                    'day': day_name,
+                    'context': context
+                })
+        
+        if not matches:
+            print(f'No matches found for "{query}"')
+            return
+        
+        print(f"Found {len(matches)} {'match' if len(matches) == 1 else 'matches'}:")
+        print()
+        print("━" * 80)
+        print()
+        
+        for match in matches:
+            print(f"📅 {match['date']} ({match['day']})")
+            print(f'"{match["context"]}"')
+            print()
+        
+        print("━" * 80)
+        print()
+        print("Use 'journal.py open YYYY-MM-DD' to view full entry.")
+    
+    def open_entry(self, date_str):
+        """Display a specific journal entry"""
+        print("="*80)
+        print(f"JOURNAL ENTRY: {date_str}")
+        print("="*80)
+        print()
+        
+        file_path = self.get_entry(date_str)
+        
+        if not file_path.exists():
+            print(f"✗ No entry found for {date_str}")
+            return
+        
+        # Display content
+        content = file_path.read_text()
+        print(content)
+        
+        input("\n[Press Enter to close]")
+
+def main():
+    """Main function"""
+    parser = argparse.ArgumentParser(
+    description="AI Daily Journal - Markdown journal writer",
+    formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    subparsers = parser.add_subparsers(dest='command', help='Commands')
+    
+    # New entry command
+    new_parser = subparsers.add_parser('new', help='Create new journal entry')
+    
+    # List entries command
+    list_parser = subparsers.add_parser('list', help='List all journal entries')
+    list_parser.add_argument('--all', action='store_true', help='Show all entries (not just recent)')
+    
+    # Search command
+    search_parser = subparsers.add_parser('search', help='Search journal entries')
+    search_parser.add_argument('query', help='Search term')
+    
+    # Open command
+    open_parser = subparsers.add_parser('open', help='Open specific entry')
+    open_parser.add_argument('date', help='Date in YYYY-MM-DD format')
+    
+    args = parser.parse_args()
+    
+    # Create journal instance
+    journal = Journal()
+    
+    # Handle commands
+    if args.command == 'new':
+        journal.create_entry()
+    elif args.command == 'list':
+        journal.list_entries(show_all=args.all)
+    elif args.command == 'search':
+        journal.search_entries(args.query)
+    elif args.command == 'open':
+        journal.open_entry(args.date)
+    else:
+        parser.print_help()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+        main()
